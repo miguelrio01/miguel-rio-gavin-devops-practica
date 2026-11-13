@@ -23,6 +23,11 @@ jobs:
       - name: Descargar el código
         uses: actions/checkout@v4
 
+      - name: Instalar Python 3.12 (la misma versión que la imagen)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Pruebas unitarias (pytest)
         run: |
           python -m pip install -r requirements-dev.txt

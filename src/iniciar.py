@@ -1,14 +1,4 @@
-"""Inicia la tienda y, si se ejecuta en el equipo, abre su interfaz en el navegador.
-
-La configuración se lee de variables de entorno para poder ejecutarla tanto
-en local como dentro de un contenedor Docker:
-
-- HOST: dirección en la que escucha el servidor (por defecto 127.0.0.1).
-- PORT: puerto del servidor (por defecto 8000).
-- ABRIR_NAVEGADOR: "1" para abrir el navegador al arrancar, "0" para no hacerlo
-  (por defecto 1). En Docker se pone a 0.
-- LOG_LEVEL: nivel de log de uvicorn (por defecto info).
-"""
+"""Inicia la tienda y abre la web en el navegador."""
 
 import os
 import webbrowser

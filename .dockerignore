@@ -1,0 +1,40 @@
+# Control de versiones
+.git
+.gitignore
+.github
+
+# Ficheros de Python que no hacen falta en la imagen
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.venv
+venv
+env
+
+# Pruebas y dependencias de desarrollo
+src/tests
+requirements-dev.txt
+
+# Lanzadores locales (en Docker se usa el CMD)
+src/iniciar.bat
+src/iniciar.sh
+
+# Docker y documentación
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+*.md
+
+# Entorno y secretos
+.env
+.env.*
+
+# Editores y sistema
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Entregables
+*.zip

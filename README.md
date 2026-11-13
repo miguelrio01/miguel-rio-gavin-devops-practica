@@ -134,21 +134,33 @@ En PowerShell (Windows) se puede usar `Invoke-RestMethod http://localhost:8000/p
 
 La imagen incluye un `HEALTHCHECK` que consulta `/productos`; `docker ps` muestra el contenedor como `healthy` cuando responde.
 
-### 5. Publicar la imagen en Docker Hub (push)
+### 5. Publicar la imagen en un registry (push)
+
+La imagen está publicada en **GitHub Container Registry**: `ghcr.io/miguelrio01/tienda-online` (etiquetas `1.0.0` y `latest`).
+
+La publicación es automática con **GitHub Actions** (`.github/workflows/docker.yml`). En cada cambio el flujo hace **build → run → test → push**:
+
+1. Ejecuta las pruebas unitarias con `pytest`.
+2. Construye la imagen con `docker build`.
+3. Arranca el contenedor con `docker run`.
+4. Prueba los endpoints con `curl`: crea un cliente, un producto y un pedido y comprueba el total y el stock.
+5. Si el cambio es en `main`, sube la imagen al registry con `docker push`.
+
+Para publicarla a mano desde un equipo:
 
 ```bash
-docker login
-docker tag tienda-online:1.0.0 <usuario-dockerhub>/tienda-online:1.0.0
-docker tag tienda-online:1.0.0 <usuario-dockerhub>/tienda-online:latest
-docker push <usuario-dockerhub>/tienda-online:1.0.0
-docker push <usuario-dockerhub>/tienda-online:latest
+echo <TOKEN_GITHUB> | docker login ghcr.io -u miguelrio01 --password-stdin
+docker tag tienda-online:1.0.0 ghcr.io/miguelrio01/tienda-online:1.0.0
+docker tag tienda-online:1.0.0 ghcr.io/miguelrio01/tienda-online:latest
+docker push ghcr.io/miguelrio01/tienda-online:1.0.0
+docker push ghcr.io/miguelrio01/tienda-online:latest
 ```
 
 ### 6. Descargar y ejecutar la imagen publicada (pull)
 
 ```bash
-docker pull <usuario-dockerhub>/tienda-online:1.0.0
-docker run -d -p 8000:8000 --name tienda <usuario-dockerhub>/tienda-online:1.0.0
+docker pull ghcr.io/miguelrio01/tienda-online:1.0.0
+docker run -d -p 8000:8000 --name tienda ghcr.io/miguelrio01/tienda-online:1.0.0
 ```
 
 ### Buenas prácticas aplicadas

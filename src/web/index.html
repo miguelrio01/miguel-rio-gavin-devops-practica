@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173442">
+  <title>Tienda online | Gestión</title>
+  <link rel="stylesheet" href="/static/estilos.css">
+  <script src="/static/aplicacion.js" defer></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Menú principal">
+      <div class="marca"><div class="marca-icono">T</div><div><strong>Tienda online</strong><span>Gestión de la tienda</span></div></div>
+      <p class="nav-label">PANEL</p>
+      <nav class="nav">
+        <button type="button" class="nav-boton activo" data-vista="inicio" aria-current="page"><span class="nav-icono">▦</span> Resumen</button>
+        <button type="button" class="nav-boton" data-vista="usuarios"><span class="nav-icono">♙</span> Usuarios</button>
+        <button type="button" class="nav-boton" data-vista="productos"><span class="nav-icono">▣</span> Productos</button>
+        <button type="button" class="nav-boton" data-vista="pedidos"><span class="nav-icono">▤</span> Pedidos</button>
+      </nav>
+      <div class="sidebar-pie"><span class="luz"></span> Aplicación local <small>Los datos se guardan en memoria.</small></div>
+    </aside>
+
+    <main class="principal">
+      <header class="cabecera"><div><p class="eyebrow">ADMINISTRACIÓN</p><h1 id="titulo-vista">Resumen</h1><p id="subtitulo-vista" class="subtitulo">Consulta el estado de la tienda.</p></div><a class="enlace-documentacion" href="/docs" target="_blank" rel="noopener">Documentación API <span aria-hidden="true">↗</span></a></header>
+
+      <section class="vista" id="vista-inicio" aria-labelledby="titulo-vista">
+        <div class="estadisticas">
+          <div class="estadistica"><span class="estadistica-label">Usuarios</span><strong id="stat-usuarios">0</strong><span class="estadistica-pie">Registrados</span></div>
+          <div class="estadistica"><span class="estadistica-label">Productos</span><strong id="stat-productos">0</strong><span class="estadistica-pie">En catálogo</span></div>
+          <div class="estadistica"><span class="estadistica-label">Unidades</span><strong id="stat-unidades">0</strong><span class="estadistica-pie">Disponibles</span></div>
+          <div class="estadistica"><span class="estadistica-label">Pedidos</span><strong id="stat-pedidos">0</strong><span class="estadistica-pie">Registrados</span></div>
+        </div>
+        <div class="rejilla-dos">
+          <article class="panel"><div class="panel-cabeza"><div><h2>Accesos rápidos</h2><p>Operaciones habituales</p></div></div><div class="acciones-rapidas"><button type="button" class="accion-rapida" data-ir="usuarios"><span class="accion-icono">+</span><span><strong>Registrar usuario</strong><small>Añadir un cliente o administrador</small></span><span>→</span></button><button type="button" class="accion-rapida" data-ir="productos"><span class="accion-icono">+</span><span><strong>Añadir producto</strong><small>Actualizar el catálogo</small></span><span>→</span></button><button type="button" class="accion-rapida" data-ir="pedidos"><span class="accion-icono">+</span><span><strong>Nuevo pedido</strong><small>Registrar una compra</small></span><span>→</span></button></div></article>
+          <article class="panel"><div class="panel-cabeza"><div><h2>Últimos productos</h2><p>Artículos añadidos al catálogo</p></div></div><div id="resumen-productos" class="resumen-lista"><p class="estado-vacio">Todavía no hay productos.</p></div></article>
+        </div>
+      </section>
+
+      <section class="vista" id="vista-usuarios" hidden>
+        <div class="rejilla-formulario">
+          <article class="panel"><div class="panel-cabeza"><div><h2>Nuevo usuario</h2><p>Completa los datos para registrarlo</p></div></div>
+            <form id="form-usuario" class="formulario">
+              <label>Nombre <input name="nombre" type="text" maxlength="120" required placeholder="Nombre completo"></label>
+              <label>Correo electrónico <input name="email" type="email" required placeholder="nombre@correo.com"></label>
+              <label>Tipo de usuario <select name="tipo" id="tipo-usuario"><option value="cliente">Cliente</option><option value="administrador">Administrador</option></select></label>
+              <label id="campo-direccion">Dirección postal <input name="direccion" type="text" maxlength="300" required placeholder="Calle, número, ciudad"></label>
+              <button class="boton-primario" type="submit">Guardar usuario</button>
+            </form>
+          </article>
+          <article class="panel"><div class="panel-cabeza"><div><h2>Usuarios registrados</h2><p>Clientes y administradores</p></div><span class="contador" id="conteo-usuarios">0</span></div><div class="tabla-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Tipo</th></tr></thead><tbody id="tabla-usuarios"><tr><td colspan="3" class="estado-vacio">No hay usuarios registrados.</td></tr></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section class="vista" id="vista-productos" hidden>
+        <div class="rejilla-formulario">
+          <article class="panel"><div class="panel-cabeza"><div><h2>Añadir producto</h2><p>Elige la categoría y sus características</p></div></div>
+            <form id="form-producto" class="formulario">
+              <label>Nombre del producto <input name="nombre" maxlength="150" required placeholder="Ej. Ordenador portátil"></label>
+              <label>Tipo de producto <select name="tipo" id="tipo-producto"><option value="generico">Genérico</option><option value="electronico">Electrónico</option><option value="ropa">Ropa</option></select></label>
+              <div class="form-fila"><label>Precio (€) <input name="precio" type="number" min="0.01" step="0.01" required placeholder="0,00"></label><label>Stock <input name="stock" type="number" min="0" step="1" required value="0"></label></div>
+              <div id="campos-electronico" hidden><label>Garantía (meses) <input name="meses_garantia" type="number" min="0" step="1" placeholder="24"></label></div>
+              <div id="campos-ropa" class="form-fila" hidden><label>Talla <input name="talla" type="text" maxlength="30" placeholder="M"></label><label>Color <input name="color" type="text" maxlength="60" placeholder="Azul"></label></div>
+              <button class="boton-primario" type="submit">Guardar producto</button>
+            </form>
+          </article>
+          <article class="panel"><div class="panel-cabeza"><div><h2>Inventario</h2><p>Productos disponibles</p></div><span class="contador" id="conteo-productos">0</span></div><div class="filtro"><input id="buscar-producto" type="search" placeholder="Buscar un producto..." aria-label="Buscar productos"></div><div class="tabla-scroll"><table><thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody id="tabla-productos"><tr><td colspan="4" class="estado-vacio">No hay productos en el catálogo.</td></tr></tbody></table></div></article>
+        </div>
+      </section>
+
+      <section class="vista" id="vista-pedidos" hidden>
+        <div class="rejilla-formulario">
+          <article class="panel"><div class="panel-cabeza"><div><h2>Crear pedido</h2><p>Selecciona un cliente y los productos</p></div></div>
+            <form id="form-pedido" class="formulario">
+              <label>Cliente <select id="cliente-pedido" name="cliente_id" required><option value="">Selecciona un cliente</option></select></label>
+              <div class="lineas-titulo">Productos del pedido</div><div id="lineas-pedido" class="lineas-pedido"></div>
+              <button type="button" class="boton-secundario" id="anadir-linea">+ Añadir otro producto</button>
+              <button class="boton-primario" type="submit" id="boton-pedido">Registrar pedido</button>
+              <p class="nota">El stock se descontará al confirmar el pedido.</p>
+            </form>
+          </article>
+          <article class="panel"><div class="panel-cabeza"><div><h2>Historial de pedidos</h2><p>Consulta las compras por cliente</p></div></div><div class="historial-filtro"><label>Ver pedidos de <select id="cliente-historial"><option value="">Selecciona un cliente</option></select></label></div><div id="lista-pedidos" class="lista-pedidos"><p class="estado-vacio">Selecciona un cliente para ver su historial.</p></div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

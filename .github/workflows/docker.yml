@@ -1,0 +1,86 @@
+name: Docker build, run, test y push
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_LOCAL: tienda-online
+  IMAGE_TAG: "1.0.0"
+  REGISTRY_IMAGE: ghcr.io/miguelrio01/tienda-online
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Pruebas unitarias (pytest)
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m pytest -q
+
+      - name: 1. Build - construir la imagen
+        run: |
+          docker build -t $IMAGE_LOCAL:$IMAGE_TAG .
+          docker tag $IMAGE_LOCAL:$IMAGE_TAG $IMAGE_LOCAL:latest
+          docker images $IMAGE_LOCAL
+
+      - name: 2. Run - ejecutar el contenedor
+        run: |
+          docker run -d -p 8000:8000 --name tienda $IMAGE_LOCAL:$IMAGE_TAG
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/productos > /dev/null && break
+            sleep 1
+          done
+          docker ps
+          docker logs tienda
+
+      - name: 3. Test - probar los endpoints
+        run: |
+          set -e
+          echo "GET / (interfaz web)"
+          curl -sf -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8000/
+          echo "GET /docs (Swagger)"
+          curl -sf -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8000/docs
+          echo "GET /productos"
+          curl -sf http://localhost:8000/productos; echo
+          echo "POST /usuarios"
+          CLIENTE=$(curl -sf -X POST http://localhost:8000/usuarios -H "Content-Type: application/json" \
+            -d '{"tipo":"cliente","nombre":"Ana","email":"ana@example.com","direccion":"Calle Mayor, 1"}')
+          echo "$CLIENTE"
+          echo "POST /productos"
+          PRODUCTO=$(curl -sf -X POST http://localhost:8000/productos -H "Content-Type: application/json" \
+            -d '{"tipo":"electronico","nombre":"Portatil","precio":800,"stock":5,"meses_garantia":24}')
+          echo "$PRODUCTO"
+          CID=$(echo "$CLIENTE" | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          PID=$(echo "$PRODUCTO" | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          echo "POST /pedidos"
+          PEDIDO=$(curl -sf -X POST http://localhost:8000/pedidos -H "Content-Type: application/json" \
+            -d "{\"cliente_id\":\"$CID\",\"items\":[{\"producto_id\":\"$PID\",\"cantidad\":2}]}")
+          echo "$PEDIDO"
+          echo "$PEDIDO" | python3 -c "import sys, json; p=json.load(sys.stdin); assert p['total']==1600.0, p; print('Total del pedido:', p['total'])"
+          echo "GET /productos/$PID (el stock debe ser 3)"
+          curl -sf http://localhost:8000/productos/$PID | python3 -c "import sys, json; p=json.load(sys.stdin); assert p['stock']==3, p; print('Stock:', p['stock'])"
+          echo "Todas las pruebas han pasado"
+
+      - name: Parar el contenedor
+        if: always()
+        run: docker rm -f tienda || true
+
+      - name: 4. Push - publicar la imagen en GitHub Container Registry
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag $IMAGE_LOCAL:$IMAGE_TAG $REGISTRY_IMAGE:$IMAGE_TAG
+          docker tag $IMAGE_LOCAL:$IMAGE_TAG $REGISTRY_IMAGE:latest
+          docker push $REGISTRY_IMAGE:$IMAGE_TAG
+          docker push $REGISTRY_IMAGE:latest
